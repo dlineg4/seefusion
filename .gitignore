@@ -9,6 +9,7 @@
 seefusion-main/src/main/resources/ui
 **/.gradle
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 
 *.war
 
