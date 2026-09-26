@@ -1,7 +1,10 @@
 package com.seefusion;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.io.File;
 
 import org.junit.Test;
 
@@ -27,5 +30,24 @@ public class SeeFusionTest extends TestCase {
         assertFalse(sf.isDebugIP(""));
         assertFalse(sf.isDebugIP(null));
     }
+
+	@Test
+	public void testFileUrlToPathDecodesSpaces() throws Exception {
+		// CommandBox server homes contain the server name, which may have spaces.
+		File jar = new File(System.getProperty("java.io.tmpdir"), "My Server/seefusion/seefusion.jar");
+		String url = jar.toURI().toURL().toString();
+		assertTrue(url.contains("%20"));
+		assertEquals(jar.getPath(), SeeFusion.fileUrlToPath(url));
+	}
+
+	@Test
+	public void testFileUrlToPathKeepsDirectorySeparator() throws Exception {
+		File dir = new File(System.getProperty("java.io.tmpdir"), "My Server/classes");
+		String url = dir.toURI().toString();
+		if (!url.endsWith("/")) {
+			url += "/";
+		}
+		assertEquals(dir.getPath() + File.separator, SeeFusion.fileUrlToPath(url));
+	}
 
 }

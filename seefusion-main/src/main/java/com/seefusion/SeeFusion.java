@@ -12,6 +12,8 @@ import java.lang.management.MemoryUsage;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
@@ -349,11 +351,31 @@ public final class SeeFusion implements Observer<Config> {
 				}
 			}
 			jarLoc = jarLoc.replace("jar:", "");
-			jarLocation = jarLoc.replace("file:", "");
+			jarLocation = fileUrlToPath(jarLoc);
 		}
 		return jarLocation;
 	}
 	
+	/**
+	 * Converts a file: URL to a local path, decoding escapes such as %20 and handling Windows drive
+	 * letters (file:/C:/My%20Server/seefusion.jar -> C:\My Server\seefusion.jar). Stripping "file:"
+	 * alone left those in, so SeeFusion couldn't find its jar (UI) or seefusion.xml when the path had spaces.
+	 */
+	static String fileUrlToPath(String fileUrl) {
+		try {
+			String path = new File(new URI(fileUrl)).getPath();
+			// Keep the trailing separator for a classes directory, as before.
+			if (fileUrl.endsWith("/") && !path.endsWith(File.separator)) {
+				path += File.separator;
+			}
+			return path;
+		}
+		catch (URISyntaxException | IllegalArgumentException e) {
+			// Not a well-formed file: URL; fall back to the old behaviour.
+			return fileUrl.replace("file:", "");
+		}
+	}
+
 	static File getSeeFusionDirectory() {
 		File loc = new File(SeeFusion.getJarLocation());
 		return loc.isDirectory() ? loc : loc.getParentFile();
