@@ -144,12 +144,54 @@ public class Driver implements java.sql.Driver {
 				loadedDrivers.put(name, (java.sql.Driver)Class.forName(name).newInstance());
 			}
 			catch (Exception e) {
-				loadedDrivers.put(name, null);
-				LOG.log(Level.WARNING, "Exception attempting to load driver: " + name, e);
+				// The driver may live in a class loader SeeFusion can't see, e.g. a JDBC driver that Lucee
+				// loads from an OSGi bundle. Try the thread context class loader, which the app server sets.
+				java.sql.Driver driver = loadDriverFromContextClassLoader(name);
+				loadedDrivers.put(name, driver);
+				if (driver == null) {
+					LOG.log(Level.WARNING, "Exception attempting to load driver: " + name, e);
+				}
 			}
 		}
 	}
 	
+	private static java.sql.Driver loadDriverFromContextClassLoader(String name) {
+		ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+		if (contextLoader == null) {
+			return null;
+		}
+		try {
+			java.sql.Driver driver = (java.sql.Driver) Class.forName(name, true, contextLoader).newInstance();
+			LOG.info("Loaded driver " + name + " via thread context class loader " + contextLoader);
+			return driver;
+		}
+		catch (Exception e) {
+			LOG.log(Level.FINE, "Thread context class loader could not load driver: " + name, e);
+		}
+		return loadDriverViaLucee(name, contextLoader);
+	}
+
+	/**
+	 * Lucee 5 loads JDBC drivers (e.g. its bundled jTDS) from OSGi bundles that neither SeeFusion's
+	 * class loader nor Lucee's thread context class loader can see. Lucee's own ClassUtil can, so ask it
+	 * via reflection (SeeFusion can't link against Lucee classes). Returns null when not running in Lucee.
+	 */
+	private static java.sql.Driver loadDriverViaLucee(String name, ClassLoader contextLoader) {
+		try {
+			Class<?> factory = Class.forName("lucee.loader.engine.CFMLEngineFactory", true, contextLoader);
+			Object engine = factory.getMethod("getInstance").invoke(null);
+			Object classUtil = engine.getClass().getMethod("getClassUtil").invoke(engine);
+			Class<?> driverClass = (Class<?>) classUtil.getClass().getMethod("loadClass", String.class).invoke(classUtil, name);
+			java.sql.Driver driver = (java.sql.Driver) driverClass.newInstance();
+			LOG.info("Loaded driver " + name + " via Lucee from " + driverClass.getClassLoader());
+			return driver;
+		}
+		catch (Exception e) {
+			LOG.log(Level.FINE, "Lucee could not load driver: " + name, e);
+			return null;
+		}
+	}
+
 	static java.sql.Driver getDriver(String name) {
 		return loadedDrivers.get(name);
 	}
