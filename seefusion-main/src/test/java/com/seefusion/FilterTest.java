@@ -12,8 +12,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import mockit.Expectations;
-import mockit.Mocked;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class FilterTest extends TestCase {
 
@@ -34,40 +34,36 @@ public class FilterTest extends TestCase {
 
 	@Test
 	@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
-	public void testgetForwardedMultipleRemoteAddr(@Mocked final HttpServletRequest httpRequest) {
-		new Expectations() {{
-			httpRequest.getHeader("X-Forwarded-For"); result="8.8.8.8, 72.14.255.255";
-		}};
+	public void testgetForwardedMultipleRemoteAddr() {
+		HttpServletRequest httpRequest = mock(HttpServletRequest.class);
+		when(httpRequest.getHeader("X-Forwarded-For")).thenReturn("8.8.8.8, 72.14.255.255");
 		assertEquals("72.14.255.255", Filter.getForwardedRemoteAddr(httpRequest, "X-Forwarded-For", 1));
 		assertEquals("8.8.8.8", Filter.getForwardedRemoteAddr(httpRequest, "X-Forwarded-For", 2));
 	}
 	
 	@Test
 	@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
-	public void testgetForwardedSingleRemoteAddr(@Mocked final HttpServletRequest httpRequest) {
-		new Expectations() {{
-			httpRequest.getHeader("X-Forwarded-For"); result="8.8.8.8";
-		}};
+	public void testgetForwardedSingleRemoteAddr() {
+		HttpServletRequest httpRequest = mock(HttpServletRequest.class);
+		when(httpRequest.getHeader("X-Forwarded-For")).thenReturn("8.8.8.8");
 		assertEquals("8.8.8.8", Filter.getForwardedRemoteAddr(httpRequest, "X-Forwarded-For", 1));
 	}
 
 	@Test
 	@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
-	public void testgetForwardedForMissingHeader(@Mocked final HttpServletRequest httpRequest) {
-		new Expectations() {{
-			httpRequest.getHeader("X-Forwarded-For"); result=null;
-			httpRequest.getRemoteAddr(); result = "8.8.8.8";
-		}};
+	public void testgetForwardedForMissingHeader() {
+		HttpServletRequest httpRequest = mock(HttpServletRequest.class);
+		when(httpRequest.getHeader("X-Forwarded-For")).thenReturn(null);
+		when(httpRequest.getRemoteAddr()).thenReturn("8.8.8.8");
 		assertEquals("8.8.8.8", Filter.getForwardedRemoteAddr(httpRequest, "X-Forwarded-For", 1));
 	}
 
 	@Test
 	@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
-	public void testgetForwardedForInvalidDepth(@Mocked final HttpServletRequest httpRequest) {
-		new Expectations() {{
-			httpRequest.getHeader("X-Forwarded-For"); result="1.1.1.1";
-			httpRequest.getRemoteAddr(); result = "8.8.8.8";
-		}};
+	public void testgetForwardedForInvalidDepth() {
+		HttpServletRequest httpRequest = mock(HttpServletRequest.class);
+		when(httpRequest.getHeader("X-Forwarded-For")).thenReturn("1.1.1.1");
+		when(httpRequest.getRemoteAddr()).thenReturn("8.8.8.8");
 		assertEquals("8.8.8.8", Filter.getForwardedRemoteAddr(httpRequest, "X-Forwarded-For", 3));
 	}
 

@@ -2,23 +2,24 @@ package com.seefusion;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import mockit.Expectations;
-import mockit.Mocked;
-
 public class ProfileTest {
 
 	private static final Logger LOG = Logger.getLogger(ProfileTest.class.getName());
 
 	@Test
-	public void testJsonSerialization(@Mocked final ResultSet rs) throws Exception {
+	public void testJsonSerialization() throws Exception {
+		final ResultSet rs = mock(ResultSet.class);
 		final Profile profile = new Profile("testInstance", "testName", 100L, 1000L);
 		profile.notifyStarted();
 		profile.addSnapshot(new ThreadStack(Thread.currentThread()));
@@ -41,17 +42,15 @@ public class ProfileTest {
 		String threadStacks = rs.getString(i++);
 		return new Profile(id, instanceName, name, startTick, scheduledDurationMs, intervalMs, actualDurationMs, threadStacks);
 		 */
-		new Expectations() {{
-			rs.getString(1); result=profile.getId();
-			rs.getString(2); result=profile.getInstanceName();
-			rs.getString(3); result=profile.getName();
-			rs.getTimestamp(4).getTime(); result=profile.getStartTick();
-			rs.getLong(5); result=profile.getScheduledDurationMs();
-			rs.getLong(6); result=profile.getActualDurationMs();
-			rs.getLong(7); result=profile.getIntervalMs();
-			rs.getInt(8); result = 5;
-			rs.getString(9); result = profile.getThreadStacksJson();
-		}};
+		when(rs.getString(1)).thenReturn(profile.getId());
+		when(rs.getString(2)).thenReturn(profile.getInstanceName());
+		when(rs.getString(3)).thenReturn(profile.getName());
+		when(rs.getTimestamp(4)).thenReturn(new Timestamp(profile.getStartTick()));
+		when(rs.getLong(5)).thenReturn(profile.getScheduledDurationMs());
+		when(rs.getLong(6)).thenReturn(profile.getActualDurationMs());
+		when(rs.getLong(7)).thenReturn(profile.getIntervalMs());
+		when(rs.getInt(8)).thenReturn(5);
+		when(rs.getString(9)).thenReturn(profile.getThreadStacksJson());
 		
 		Profile profile2 = new ProfileDao(null).newInstance(rs);
 

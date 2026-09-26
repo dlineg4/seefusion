@@ -17,7 +17,7 @@ dependencies {
     implementation 'org.apache.tomcat:tomcat-catalina:7.0.4'
     // https://mvnrepository.com/artifact/com.oracle.database.jdbc/ojdbc8
     implementation 'com.oracle.database.jdbc:ojdbc8:21.7.0.0'
-    testImplementation 'org.jmockit:jmockit:1.49'
+    testImplementation 'org.mockito:mockito-core:5.24.0'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.apache.derby:derby:10.12.1.1'
     testImplementation 'net.sourceforge.jtds:jtds:1.2.8'
@@ -26,10 +26,6 @@ dependencies {
 
 test {
     jvmArgs '-Doracle.jdbc.timezoneAsRegion=false'
-    // JMockit must be loaded as a Java agent, or JUnit rejects its @Mocked/@Injectable test parameters.
-    doFirst {
-        jvmArgs "-javaagent:${classpath.find { it.name.startsWith('jmockit') }.absolutePath}"
-    }
     // Tests that need a live database. We only use SQL Server, so Oracle and MySQL tests never run.
     exclude '**/*Oracle*Test.class', '**/*MySql*Test.class'
     // SQL Server tests need a server at host "mssql"; run them with -PdbTests.

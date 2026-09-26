@@ -1,53 +1,57 @@
 package com.seefusion;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import java.util.ResourceBundle;
 
 import org.junit.Test;
-
-import mockit.Expectations;
-import mockit.Mocked;
+import org.mockito.MockedStatic;
 
 public class ActiveMonitoringRuleTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testLogIncident(@Mocked final SeeFusion sf) throws Exception {
-		final RequestList requestList = new RequestList();
-		final DbLogger dbLogger = new DbLogger(sf);
-		new Expectations() {{
-			sf.getDbLogger(); result=dbLogger;
-			sf.getMasterRequestList(); result=requestList;
-		}};
-		RequestInfo ri = new RequestInfo("SomeRequest", "SomeServer");
-		ri.setServerName("test");
-		requestList.createRequest(ri);
-		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-		DbLoggerConnectionPool pool = new DbLoggerConnectionPool("jdbc:derby:memory:test;create=true", null, null);
-		dbLogger.setConnectionPool(pool);
+	public void testLogIncident() throws Exception {
+		final SeeFusion sf = mock(SeeFusion.class);
+		// Incident.getRequests() looks up the DbLogger via the static SeeFusion.getInstance(),
+		// so point that at the mock too.
+		try (MockedStatic<SeeFusion> seeFusionStatics = mockStatic(SeeFusion.class)) {
+			seeFusionStatics.when(SeeFusion::getInstance).thenReturn(sf);
+			final RequestList requestList = new RequestList();
+			final DbLogger dbLogger = new DbLogger(sf);
+			when(sf.getDbLogger()).thenReturn(dbLogger);
+			when(sf.getMasterRequestList()).thenReturn(requestList);
+			RequestInfo ri = new RequestInfo("SomeRequest", "SomeServer");
+			ri.setServerName("test");
+			requestList.createRequest(ri);
+			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+			DbLoggerConnectionPool pool = new DbLoggerConnectionPool("jdbc:derby:memory:test;create=true", null, null);
+			dbLogger.setConnectionPool(pool);
 
-		ActiveMonitoringRule test = new RuleActiveRequests();
-		String id = test.logIncident(sf, System.currentTimeMillis(), "foo");
-		SeeDAO<Incident> dao = (SeeDAO<Incident>) dbLogger.getDao(Incident.class);
-		Thread.sleep(200);
-		dao.clearCache();
-		Incident i = dao.getById(id);
-		assertEquals(1, i.getRequests().length());
+			ActiveMonitoringRule test = new RuleActiveRequests();
+			String id = test.logIncident(sf, System.currentTimeMillis(), "foo");
+			SeeDAO<Incident> dao = (SeeDAO<Incident>) dbLogger.getDao(Incident.class);
+			Thread.sleep(200);
+			dao.clearCache();
+			Incident i = dao.getById(id);
+			assertEquals(1, i.getRequests().length());
+		}
 	}
 
 	@Test
-	public void testDoNotify(@Mocked final SeeFusion sf) throws Exception {
+	public void testDoNotify() throws Exception {
+		final SeeFusion sf = mock(SeeFusion.class);
 		final RequestList requestList = new RequestList();
 		final CountersHistory countersHistory = new CountersHistory(60, sf);
 		final ResourceBundle resources = ResourceBundle.getBundle("com.seefusion.SeeFusionMessages");
 		final MessageFormatFactory messageFormatFactory = new MessageFormatFactory(resources);
-		new Expectations() {{
-			sf.getMasterRequestList(); result=requestList;
-			sf.getHistoryMinutes(); result=countersHistory;
-			sf.getMessageFormatFactory(); result=messageFormatFactory;
-			sf.getInstanceName(); result="Server1";
-		}};
+		when(sf.getMasterRequestList()).thenReturn(requestList);
+		when(sf.getHistoryMinutes()).thenReturn(countersHistory);
+		when(sf.getMessageFormatFactory()).thenReturn(messageFormatFactory);
+		when(sf.getInstanceName()).thenReturn("Server1");
 		RequestInfo ri = new RequestInfo(sf, "serverName1", "requestUri1", "queryString1", "remoteIp1", "get", "/path1", true);
 		requestList.createRequest(ri);
 		Thread.sleep(100);
