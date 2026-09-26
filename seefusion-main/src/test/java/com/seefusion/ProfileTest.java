@@ -10,8 +10,8 @@ import java.util.logging.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import mockit.Expectations;
 import mockit.Mocked;
-import mockit.StrictExpectations;
 
 public class ProfileTest {
 
@@ -41,7 +41,7 @@ public class ProfileTest {
 		String threadStacks = rs.getString(i++);
 		return new Profile(id, instanceName, name, startTick, scheduledDurationMs, intervalMs, actualDurationMs, threadStacks);
 		 */
-		new StrictExpectations() {{
+		new Expectations() {{
 			rs.getString(1); result=profile.getId();
 			rs.getString(2); result=profile.getInstanceName();
 			rs.getString(3); result=profile.getName();
