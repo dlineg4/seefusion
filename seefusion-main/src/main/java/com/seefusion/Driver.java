@@ -26,6 +26,10 @@ public class Driver implements java.sql.Driver {
 
 	static boolean driverFirstUse = true;
 
+	// Set while this wrapper calls the real driver, so the JDBC agent (JdbcAgent) doesn't wrap the
+	// same connection a second time.
+	static final ThreadLocal<Boolean> CONNECTING = new ThreadLocal<Boolean>();
+
 	static HashMap<String, java.sql.Driver> loadedDrivers = new HashMap<String, java.sql.Driver>();
 
 	// is this See Fusion or See Java?
@@ -196,6 +200,41 @@ public class Driver implements java.sql.Driver {
 		return loadedDrivers.get(name);
 	}
 
+	/**
+	 * Wraps a real connection so SeeFusion can monitor it: detects the SQL dialect, then wraps it for
+	 * this JRE. Used by connect() and by the JDBC agent (JdbcAgent) for unwrapped datasources.
+	 */
+	static Connection wrapConnection(Connection c, Properties connectionProperties, Properties urlConfig) throws SQLException {
+		String dialect = urlConfig.getProperty("dialect");
+		if(dialect != null) {
+			dialect = dialect.toLowerCase();
+		}
+		String className = c.getClass().getName().toLowerCase();
+		SqlDialectMetadata meta = null;
+		if(className.startsWith("oracle.jdbc") || "oracle".equals(dialect)) {
+			meta = new OracleDialectMetadata();
+		}
+		// jTDS (net.sourceforge.jtds...) is our SQL Server driver; the agent has no dialect= URL option.
+		else if (className.contains("sqlserver") || className.contains("jtds") || "sqlserver".equals(dialect)) {
+			meta = new SqlServerDialectMetadata();
+		}
+		else if (className.contains("mysql") || "mysql".equals(dialect)) {
+			meta = new MySQLDialectMetadata();
+		}
+		Properties connectionMetadata;
+		if(meta == null) {
+			connectionMetadata= new Properties();
+		}
+		else {
+			connectionMetadata= meta.getMetadata(c);
+		}
+		if(urlConfig.containsKey("dsn")) {
+			connectionMetadata.put("dsn", urlConfig.getProperty("dsn"));
+		}
+		// if the user explicitly loaded com.seefusion.Driver, redirect to the JRE-appropriate wrap method
+		return instance.wrap(c, connectionProperties, urlConfig, connectionMetadata);
+	}
+
 	@Override
 	public boolean acceptsURL(String url) throws SQLException {
 		return url.toLowerCase().startsWith("jdbc:seefusion:");
@@ -212,6 +251,7 @@ public class Driver implements java.sql.Driver {
 				driverFirstUse = false;
 			}
 			Connection c = null;
+			CONNECTING.set(Boolean.TRUE);
 			try {
 				String wrappedURL = urlConfig.getProperty("url");
 				String driverName = urlConfig.getProperty("driver");
@@ -241,37 +281,14 @@ public class Driver implements java.sql.Driver {
 			catch (Exception e) {
 				LOG.log(Level.WARNING, "Unable to connect", e);
 			}
+			finally {
+				CONNECTING.remove();
+			}
 			try {
 				if (c == null) {
 					return null;
 				}
-				String dialect = urlConfig.getProperty("dialect");
-				if(dialect != null) {
-					dialect = dialect.toLowerCase();
-				}
-				String className = c.getClass().getName().toLowerCase();
-				SqlDialectMetadata meta = null;
-				if(className.startsWith("oracle.jdbc") || "oracle".equals(dialect)) {
-					meta = new OracleDialectMetadata();
-				}
-				else if (className.contains("sqlserver") || "sqlserver".equals(dialect)) {
-					meta = new SqlServerDialectMetadata();
-				}
-				else if (className.contains("mysql") || "mysql".equals(dialect)) {
-					meta = new MySQLDialectMetadata();
-				}
-				Properties connectionMetadata;
-				if(meta == null) {
-					connectionMetadata= new Properties();
-				}
-				else {
-					connectionMetadata= meta.getMetadata(c);
-				}
-				if(urlConfig.containsKey("dsn")) {
-					connectionMetadata.put("dsn", urlConfig.getProperty("dsn"));
-				}
-				// if the user explicitly loaded com.seefusion.Driver, redirect to the JRE-appropriate wrap method
-				return instance.wrap(c, connectionProperties, urlConfig, connectionMetadata);
+				return wrapConnection(c, connectionProperties, urlConfig);
 			}
 			catch (Exception e) {
 				e.printStackTrace();

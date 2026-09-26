@@ -1,6 +1,14 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2' apply false
+}
 
 apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
 project.version = '5.6.1.FINAL'
+
+repositories {
+    mavenCentral()
+}
 
 allprojects {
     group = 'net.darylb.seefusion'
@@ -25,6 +33,12 @@ subprojects {
 
 configurations {
 	SeeFusion
+	// Libraries bundled (relocated) into the SeeFusion jar
+	bundled
+}
+
+dependencies {
+	bundled 'net.bytebuddy:byte-buddy:1.18.14'
 }
 
 def seeFusionProjects = [
@@ -37,16 +51,33 @@ def seeFusionProjects = [
 ]
 
 
+// The SeeFusion jar is built by shadowJar, which bundles Byte Buddy for the JDBC agent under
+// com.seefusion.shaded so it can't clash with an application's own copy.
 jar {
+	enabled = false
+}
+
+shadowJar {
 	archiveFileName = "seefusion-${project.version}.jar"
+	configurations = [project.configurations.bundled]
+	relocate 'net.bytebuddy', 'com.seefusion.shaded.net.bytebuddy'
+	// Byte Buddy is a multi-release jar; its extra classes for newer JDKs (class files Shadow 7 can't read)
+	// aren't needed on Java 11, which uses the base classes.
+	exclude 'module-info.class', 'META-INF/versions/**'
 	manifest {
 		attributes (
             'Implementation-Title': "SeeFusion",
             'Implementation-Version': project.version,
-            'Main-Class': 'com.seefusion.installer.Main'
+            'Main-Class': 'com.seefusion.installer.Main',
+            'Premain-Class': 'com.seefusion.JdbcAgent',
+            'Agent-Class': 'com.seefusion.JdbcAgent',
+            'Can-Retransform-Classes': 'true',
+            'Can-Redefine-Classes': 'true'
  		)
 	}
 	seeFusionProjects.each { subproject ->
 		from project(subproject).sourceSets.main.output
 	}
 }
+
+assemble.dependsOn shadowJar
