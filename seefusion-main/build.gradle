@@ -33,6 +33,12 @@ test {
         exclude '**/*SqlServer*Test.class'
     }
 }
+// Package the prebuilt web UI (seefusion-ui/dist) into the jar under ui/, where SeeFusion serves it from.
+processResources {
+    from('../seefusion-ui/dist') {
+        into 'ui'
+    }
+}
 sourceSets.test {
     resources.srcDirs = ["src/main/resources"]
 }
