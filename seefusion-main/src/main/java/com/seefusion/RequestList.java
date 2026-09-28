@@ -3,6 +3,7 @@
  */
 package com.seefusion;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -165,6 +166,43 @@ class RequestList extends SeeTask implements Subject<RequestList>, Cloneable {
 
 	public RequestInfo getActiveRequest(String pid) {
 		return currentRequests.get(pid);
+	}
+
+	/**
+	 * @return the request with this pid from the active, recent or slow list, or null if it's in none
+	 */
+	RequestInfo findRequest(String pid) {
+		synchronized (currentRequests) {
+			RequestInfo ret = currentRequests.get(pid);
+			if (ret != null) {
+				return ret;
+			}
+			for (RequestInfo ri : recentPages) {
+				if (pid.equals(ri.getRequestKey())) {
+					return ri;
+				}
+			}
+			for (RequestInfo ri : recentSlowPages) {
+				if (pid.equals(ri.getRequestKey())) {
+					return ri;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @return the queries the active requests are running right now
+	 */
+	List<QueryRecord> getRunningQueries() {
+		List<QueryRecord> ret = new ArrayList<QueryRecord>();
+		for (Map.Entry<String, RequestInfo> entry : getCurrentRequests()) {
+			QueryRecord running = entry.getValue().getRunningQuery();
+			if (running != null) {
+				ret.add(running);
+			}
+		}
+		return ret;
 	}
 
 	/* (non-Javadoc)

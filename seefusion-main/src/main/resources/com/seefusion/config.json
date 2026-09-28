@@ -103,6 +103,24 @@
 				"type": "integer"
 			},
 			{
+				"help": "Number of recent finished queries to keep for the Queries view (newest first). 0 turns the list off. The default is 100.",
+				"description": "Number of recent queries shown.",
+				"configitem": "queryHistorySize",
+				"type": "integer"
+			},
+			{
+				"help": "Number of slowest queries since SeeFusion started to keep for the Queries view. 0 turns the list off. The default is 100.",
+				"description": "Number of slowest queries shown.",
+				"configitem": "slowestQueriesSize",
+				"type": "integer"
+			},
+			{
+				"help": "Number of finished queries each request keeps for its Request Details (the first ones it runs; the rest are only counted). 0 turns the list off. The default is 100.",
+				"description": "Number of queries kept per request.",
+				"configitem": "queriesPerRequest",
+				"type": "integer"
+			},
+			{
 				"help": "Theshold (in milliseconds) when pages are considered Slow.  One second is 1000ms.  The default is 8000.",
 				"description": "Theshold (in ms) when pages are considered Slow.",
 				"configitem": "slowPageThreshold",

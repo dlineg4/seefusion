@@ -100,6 +100,8 @@ class HttpRequestMap {
 		httpPages.put("/json/serverinfo", new JsonDoServerInfo());
 		httpPages.put("/json/gc", new JsonDoInvokeGC());
 		httpPages.put("/json/getrequests", new JsonDoRequestList());
+		httpPages.put("/json/getqueries", new JsonDoQueryList());
+		httpPages.put("/json/getrequestqueries", new JsonDoRequestQueries());
 		httpPages.put("/json/gethistoryminutes", new JsonDoGetHistoryMinutes());
 		httpPages.put("/json/gethistorysnapshot", new JsonDoGetHistorySnapshot());
 		httpPages.put("/json/getconfig", new JsonDoGetConfig());

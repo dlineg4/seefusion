@@ -9,8 +9,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -93,6 +96,11 @@ class RequestInfo extends DaoObjectImpl implements Cloneable {
 
 	private String profileName;
 
+	// Finished queries of this request, for its details; at most QueryHistory's per-request size.
+	private LinkedList<QueryRecord> queries = new LinkedList<QueryRecord>();
+
+	private int queriesDropped = 0;
+
 	Object getRuleState(String ruleName) {
 		return ruleStates.get(ruleName);
 	}
@@ -142,6 +150,9 @@ class RequestInfo extends DaoObjectImpl implements Cloneable {
 			// longestQueryInfo is already cloned
 			ret.setLongestQueryInfo(this.getLongestQueryInfo());
 			ret.sfInstance = sfInstance;
+			synchronized (queries) {
+				ret.queries = new LinkedList<QueryRecord>(queries);
+			}
 		}
 		catch (CloneNotSupportedException e) {
 			// should never happen
@@ -555,6 +566,7 @@ class RequestInfo extends DaoObjectImpl implements Cloneable {
 		setQueryCount(getQueryCount() + 1);
 		setQueryTimeMs(getQueryTimeMs() + ms);
 		logQuery(qi, ms);
+		recordQuery(qi, ms);
 		resultsetCount = 0;
 	}
 
@@ -567,6 +579,7 @@ class RequestInfo extends DaoObjectImpl implements Cloneable {
 			setQueryCount(getQueryCount() + 1);
 			setQueryTimeMs(getQueryTimeMs() + ms);
 			logQuery(qi, qi.getElapsedTime());
+			recordQuery(qi, ms);
 			qi.setSimpleQuery(false);
 			resultsetCount = 1;
 		}
@@ -580,6 +593,75 @@ class RequestInfo extends DaoObjectImpl implements Cloneable {
 		// sfInstance.addResultSetTime(ms);
 		// sfInstance.incrementResultSetCounter(ms);
 		// resultSetCount++;
+	}
+
+	/**
+	 * Records a finished query for this request's details and for the query lists. Called once per query,
+	 * where the query count goes up (later result sets of the same statement are not new queries).
+	 */
+	void recordQuery(QueryInfo qi, long ms) {
+		QueryHistory history = sfInstance.getQueryHistory();
+		if(history == null || !history.isRecording()) {
+			return;
+		}
+		QueryRecord record = QueryRecord.finished(qi, ms, this);
+		addQueryRecord(record, history.getPerRequestSize());
+		history.add(record);
+	}
+
+	void addQueryRecord(QueryRecord record, int maxQueries) {
+		synchronized (queries) {
+			if(queries.size() < maxQueries) {
+				queries.add(record);
+			}
+			else {
+				queriesDropped++;
+			}
+		}
+	}
+
+	/**
+	 * @return this request's finished queries (the first ones, up to the per-request size), oldest first
+	 */
+	List<QueryRecord> getQueries() {
+		synchronized (queries) {
+			return new ArrayList<QueryRecord>(queries);
+		}
+	}
+
+	/**
+	 * @return how many finished queries weren't kept because the per-request size was reached
+	 */
+	int getQueriesDropped() {
+		synchronized (queries) {
+			return queriesDropped;
+		}
+	}
+
+	/**
+	 * @return the query this request is running right now, or null
+	 */
+	QueryRecord getRunningQuery() {
+		QueryInfo qi = getQueryInfo();
+		if(qi != null && qi.isActive()) {
+			return QueryRecord.running(qi, this);
+		}
+		return null;
+	}
+
+	/**
+	 * @return server name, path and query string, as shown in the request lists
+	 */
+	String getUrl() {
+		StringBuilder url = new StringBuilder(getServerName());
+		url.append(requestURI);
+		if(pathInfo != null) {
+			url.append(pathInfo);
+		}
+		if(getQueryString() != null) {
+			url.append('?').append(getQueryString());
+		}
+		return url.toString();
 	}
 
 	long getQueryTime() {
@@ -948,20 +1030,14 @@ class RequestInfo extends DaoObjectImpl implements Cloneable {
 	@Override
 	public JSONObject toJson() {
 		JSONObject ret = new JSONObject();
-		StringBuilder url = new StringBuilder(getServerName());
-		url.append(requestURI);
-		if(pathInfo != null) {
-			url.append(pathInfo);
-		}
 		if(getQueryString() != null) {
-			url.append('?').append(getQueryString());
 			ret.put("queryString", getQueryString());
 		}
 		else {
 			ret.put("queryString", "");
 		}
 		ret.put("pid", requestKey);
-		ret.put("url", url.toString());
+		ret.put("url", getUrl());
 		ret.put("requestURI", requestURI);
 		ret.put("serverName", getServerName());
 		ret.put("method", method);

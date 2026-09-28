@@ -116,6 +116,8 @@ public final class SeeFusion implements Observer<Config> {
 	private boolean isGloballyEnabled = true;
 
 	private RequestList masterRequestList;
+
+	private final QueryHistory queryHistory = new QueryHistory();
 	
 	String webroot;
 
@@ -141,6 +143,10 @@ public final class SeeFusion implements Observer<Config> {
 	
 	RequestList getMasterRequestList() {
 		return masterRequestList;
+	}
+
+	QueryHistory getQueryHistory() {
+		return queryHistory;
 	}
 
 	Password getHttpPassword() {
@@ -515,6 +521,36 @@ public final class SeeFusion implements Observer<Config> {
 				}
 				catch (NumberFormatException e) {
 					LOG.info("Unable to parse value to int for slowHistorySize.");
+				}
+			}
+
+			if ((sval = getNewValue("queryHistorySize", "100")) != null) {
+				try {
+					queryHistory.setRecentSize(Integer.parseInt(sval));
+					LOG.info("queryHistorySize set to " + sval);
+				}
+				catch (NumberFormatException e) {
+					LOG.info("Unable to parse value to int for queryHistorySize.");
+				}
+			}
+
+			if ((sval = getNewValue("slowestQueriesSize", "100")) != null) {
+				try {
+					queryHistory.setSlowestSize(Integer.parseInt(sval));
+					LOG.info("slowestQueriesSize set to " + sval);
+				}
+				catch (NumberFormatException e) {
+					LOG.info("Unable to parse value to int for slowestQueriesSize.");
+				}
+			}
+
+			if ((sval = getNewValue("queriesPerRequest", "100")) != null) {
+				try {
+					queryHistory.setPerRequestSize(Integer.parseInt(sval));
+					LOG.info("queriesPerRequest set to " + sval);
+				}
+				catch (NumberFormatException e) {
+					LOG.info("Unable to parse value to int for queriesPerRequest.");
 				}
 			}
 
