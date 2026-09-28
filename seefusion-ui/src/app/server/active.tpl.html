@@ -64,13 +64,13 @@
 				<td colspan="11">No active requests</td>
 			</tr>
 			<tr ng-repeat="page in pages | orderBy:sortType:sortReverse" ng-class="{highlighted:page.pid === detailRequestNumber}">
-				<td>
+				<td style="min-width: 20em; overflow-wrap: anywhere;">
 					<!-- <button ng-click="getStack(page)" type="button" href="#" onClick="return false;"><img src="images/stack.gif" border=0></button> -->
 					<!-- <button ng-click="kill(page)" ng-show="canKill" type="button" href="#" onClick="return false;"><img src="images/stop.png" border=0></button> -->
 					<button ng-click="getStack(page)" title="View Stack"><span class="glyphicons show_lines blue"></span></button>
 					<button ng-click="kill(page)" ng-if="canKill"  title="Kill Request"><span class="glyphicons stop red"></span></button>
 					<button ng-click="open(page)" ng-if="clickableURLs" title="Open this URL"><span class="glyphicons share green"></span></button>
-					<span ng-click="requestDetails(page)">{{page.url | limitTo : 70}}</span><span ng-show="page.url.length > 70">...</span>
+					<span ng-click="requestDetails(page)">{{page.url}}</span>
 				</td>
 				<!-- <td ng-click="requestDetails(page)">{{page.completed | date:'short'}}</td> -->
 				<td nowrap>

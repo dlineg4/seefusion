@@ -65,7 +65,7 @@
 			</tr>
 			<!-- <tr><td colspan=8>{{pages[0] | json}}</td></tr> -->
 			<tr class="requestRow" ng-repeat="page in pages | orderBy:sortType:sortReverse" ng-class="{highlighted:page.pid === detailRequestNumber}">
-				<td><button ng-click="open(page)"  ng-if="clickableURLs" title="Open this URL"><span class="glyphicons share green"></span></button> <span ng-click="requestDetails(page)">{{page.url | limitTo : 70}}</span><span ng-show="page.url.length > 70">...</span></td>
+				<td style="min-width: 20em; overflow-wrap: anywhere;"><button ng-click="open(page)"  ng-if="clickableURLs" title="Open this URL"><span class="glyphicons share green"></span></button> <span ng-click="requestDetails(page)">{{page.url}}</span></td>
 				<td><span ng-show="displayRelativeTimes">{{page.completedAgoMs | millSecondsToTimeString}} ago</span><span ng-show="!displayRelativeTimes">{{page.completed | date:'mediumTime' | lowercase}}</span></td>
 				<td nowrap>
 					<span ng-show="dosEnabled" class="glyphicons ban" ng-click="addBlock(page.ip)" title="Block {{page.ip}}"></span>
