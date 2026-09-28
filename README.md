@@ -17,6 +17,28 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+## Known limitations of this fork
+
+This fork is being adapted for Lucee servers run by CommandBox. It is tested with Lucee 5.4.3.2 on
+Java 11 under CommandBox (Undertow), with SQL Server 2019 through the jTDS and Microsoft JDBC drivers.
+
+- **Jakarta servlet containers are not supported (e.g. Lucee 7.1 on CommandBox, Tomcat 10 and later).**
+  SeeFusion tracks requests with a `javax.servlet` filter. Jakarta EE renamed that API to
+  `jakarta.servlet`, so the filter can't load in a Jakarta container. CommandBox runs Lucee 7.1 on a
+  Jakarta server (Runwar 6), where adding SeeFusion's filter stops the server from starting. The
+  `commandbox-seefusion` CommandBox module detects Jakarta servers and starts them without SeeFusion,
+  with a warning (or refuses to start them, with `failOnUnsupported: true`). Supporting Jakarta needs a
+  Jakarta build of SeeFusion's servlet classes (the filter and four request/response wrappers).
+- **Kill-stop doesn't work on Java 20 and later.** Forcibly stopping a request uses `Thread.stop()`,
+  which always throws `UnsupportedOperationException` since Java 20. This affects the kill-stop action
+  and active monitoring rules that escalate to it. The regular kill, which interrupts the request's
+  thread and cancels its running query, still works.
+- **Distributing SeeFusion carries GPL obligations.** SeeFusion is licensed under the GNU GPL, version 3
+  or later (see above). Running it on servers you operate yourself doesn't require publishing its
+  source. Giving a copy to someone else, for example installing it on servers another organization
+  owns, is distribution under the GPL: you must make the corresponding source, including your changes,
+  available to them under the same license. (This is a summary, not legal advice.)
+
 ## About
 
 SeeFusion provides detailed monitoring and troubleshooting information about Java Servlet apps, including Adobe ColdFusion and Lucee servers. SeeFusion tracks a variety of metrics, including active, recent and slow requests and queries, request and query bottlenecks, memory utlization levels, and more.
