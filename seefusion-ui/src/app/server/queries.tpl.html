@@ -1,0 +1,65 @@
+<div class="requestList" ng-hide="lookingRequest.on">
+	<div class="btn-group" role="group" style="margin-bottom: 10px;">
+		<button type="button" class="btn btn-default" ng-class="{active: queryType == 'active'}" ng-click="setQueryType('active')">Running</button>
+		<button type="button" class="btn btn-default" ng-class="{active: queryType == 'recent'}" ng-click="setQueryType('recent')">Recent</button>
+		<button type="button" class="btn btn-default" ng-class="{active: queryType == 'slowest'}" ng-click="setQueryType('slowest')">Slowest since start</button>
+	</div>
+	<table class="table table-striped table-hover table-condensed results">
+		<thead>
+			<tr>
+				<th>Query</th>
+				<th ng-click="sortQueries('elapsed')">
+		            Time
+		            <span ng-show="querySortType == 'elapsed' && !querySortReverse" class="caret"></span>
+		            <span ng-show="querySortType == 'elapsed' && querySortReverse" class="dropup"><span class="caret"></span></span>
+				</th>
+				<th ng-click="sortQueries('rows')">
+		            Rows
+		            <span ng-show="querySortType == 'rows' && !querySortReverse" class="caret"></span>
+		            <span ng-show="querySortType == 'rows' && querySortReverse" class="dropup"><span class="caret"></span></span>
+				</th>
+				<th ng-click="sortQueries('datasource')">
+		            Datasource
+		            <span ng-show="querySortType == 'datasource' && !querySortReverse" class="caret"></span>
+		            <span ng-show="querySortType == 'datasource' && querySortReverse" class="dropup"><span class="caret"></span></span>
+				</th>
+				<th ng-click="sortQueries('completed')">
+		            Completed
+		            <span ng-show="querySortType == 'completed' && !querySortReverse" class="caret"></span>
+		            <span ng-show="querySortType == 'completed' && querySortReverse" class="dropup"><span class="caret"></span></span>
+				</th>
+				<th ng-click="sortQueries('url')">
+		            Request
+		            <span ng-show="querySortType == 'url' && !querySortReverse" class="caret"></span>
+		            <span ng-show="querySortType == 'url' && querySortReverse" class="dropup"><span class="caret"></span></span>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-show="queries.length==0 && !busy">
+				<td colspan="6">No queries.</td>
+			</tr>
+			<tr ng-repeat="q in queries | orderBy:querySortType:querySortReverse" ng-class="{highlighted:q.pid === detailRequestNumber}">
+				<td style="min-width: 25em; overflow-wrap: anywhere;">
+					<span ng-click="expandedQueries[q.id] = !expandedQueries[q.id]" title="Click to show or hide the whole query">
+						<span ng-hide="expandedQueries[q.id]">{{q.sql | limitTo : 300}}<span ng-show="q.sql.length > 300">...</span></span>
+						<span ng-show="expandedQueries[q.id]" style="white-space: pre-wrap;">{{q.sql}}</span>
+					</span>
+					<div ng-show="q.params.length" class="text-muted small">Parameters: <span ng-repeat="p in q.params">{{p}}<span ng-hide="$last">, </span></span></div>
+					<div ng-show="q.exception" class="text-danger small">{{q.exception}}</div>
+				</td>
+				<td nowrap>{{q.elapsed}} ms</td>
+				<td>{{q.rows}}</td>
+				<td>{{q.datasource}}</td>
+				<td nowrap>
+					<span ng-show="q.active">running</span>
+					<span ng-hide="q.active"><span ng-show="displayRelativeTimes">{{q.completedAgoMs | millSecondsToTimeString}} ago</span><span ng-show="!displayRelativeTimes">{{q.completed | date:'mediumTime' | lowercase}}</span></span>
+				</td>
+				<td style="min-width: 15em; overflow-wrap: anywhere;">
+					<a href="" ng-show="q.pid" ng-click="queryRequestDetails(q)" title="Show this request's details">{{q.url}}</a>
+					<span ng-hide="q.pid">(no request)</span>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

@@ -33,6 +33,14 @@ angular.module('server', ['security.authorization'])
 
 			}
 		})
+		.state('server.queries',{
+			url:'/queries',
+			breadcrumb:'Server Monitoring: Queries',
+			templateUrl:'server/queries.tpl.html',
+			controller:function($scope){
+
+			}
+		})
 	;
 }])
 
@@ -62,6 +70,17 @@ angular.module('server', ['security.authorization'])
 
 	var getRequestPages = function(){
 		$scope.busy = true;
+		if($scope.lookingRequest && $scope.lookingRequest.on) {
+			getDetailQueries();
+		}
+		if($scope.currentState === 'queries') {
+			return RequestService.getQueries($scope.queryType).then(function(response){
+				$scope.busy = false;
+				$scope.initialLoading = false;
+				$scope.queries = response;
+				return response;
+			});
+		}
 		return RequestService.getRequests($scope.currentState).then(function(response){
 			$scope.busy = false;
 			$scope.initialLoading = false;
@@ -136,6 +155,34 @@ angular.module('server', ['security.authorization'])
 	$scope.detailRequestNumber = -1;
 	$scope.sortType     = 'completed'; // set the default sort type
 	$scope.sortReverse  = true;  // set the default sort order
+
+	// Queries tab: which list, and its sort (slowest first unless a heading is clicked).
+	$scope.queries = [];
+	$scope.expandedQueries = {};
+	$scope.setQueryType = function(type) {
+		$scope.queryType = type;
+		$scope.querySortType = 'elapsed';
+		$scope.querySortReverse = true;
+		$scope.queries = [];
+		getRequestPages();
+	};
+	$scope.sortQueries = function(field) {
+		$scope.querySortReverse = ($scope.querySortType === field) ? !$scope.querySortReverse : true;
+		$scope.querySortType = field;
+	};
+	$scope.queryType = 'recent';
+	$scope.querySortType = 'elapsed';
+	$scope.querySortReverse = true;
+
+	// Request Details queries: slowest first; # (order) is the order they ran.
+	$scope.detailSortType = 'elapsed';
+	$scope.detailSortReverse = true;
+	$scope.sortDetailQueries = function(field) {
+		// # starts in run order, the others with the largest first
+		var firstReverse = field !== 'order';
+		$scope.detailSortReverse = ($scope.detailSortType === field) ? !$scope.detailSortReverse : firstReverse;
+		$scope.detailSortType = field;
+	};
 
 	//internal variable, base refresh interval in MS
 	var counterRequestTimeout = 0;
@@ -282,14 +329,48 @@ angular.module('server', ['security.authorization'])
 	$scope.requestDetails = function(page,tab) {
 		$scope.lookingRequest.on = true;
 		$scope.lookingRequest.info = page;
+		$scope.lookingRequest.pid = page.pid;
+		$scope.lookingRequest.queries = [];
+		$scope.lookingRequest.queriesDropped = 0;
+		$scope.lookingRequest.error = '';
 		$scope.detailRequestNumber = page.pid; //for the highlighted row in parent listing
 		//$location.hash('req' + page.requestNumber);
 		//$anchorScroll();
+		getDetailQueries();
+	};
+
+	// From the Queries tab, where only the request's pid and URL are known; the rest comes with its queries.
+	$scope.queryRequestDetails = function(query) {
+		if(query.pid) {
+			$scope.requestDetails({pid: query.pid, url: query.url});
+		}
+	};
+
+	// The request (fresh) and its queries; refreshed with the lists while the details are open.
+	var getDetailQueries = function() {
+		var pid = $scope.lookingRequest.pid;
+		return RequestService.getRequestQueries(pid).then(function(data){
+			if(!$scope.lookingRequest.on || $scope.lookingRequest.pid !== pid) {
+				return; // closed, or another request opened meanwhile
+			}
+			if(data.error) {
+				$scope.lookingRequest.error = data.error;
+				return;
+			}
+			$scope.lookingRequest.error = '';
+			$scope.lookingRequest.info = data.request;
+			angular.forEach(data.queries, function(query, i) {
+				query.order = i + 1;
+			});
+			$scope.lookingRequest.queries = data.queries;
+			$scope.lookingRequest.queriesDropped = data.queriesDropped;
+		});
 	};
 
 	$scope.closeDetail = function() {
 		$scope.lookingRequest.on = false;
 		$scope.lookingRequest.info = {};
+		$scope.lookingRequest.queries = [];
 	};
 
 	$scope.$on("$destroy",function(){

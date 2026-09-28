@@ -1,7 +1,7 @@
 /*
  * JsonDoRequestQueries.java
  *
- * /json/getrequestqueries?pid=: one request's queries, for its details. The finished ones it kept
+ * /json/getrequestqueries?pid=: one request and its queries, for its details. The finished ones it kept
  * (see the queriesPerRequest setting), then the one it is running, if any. Fetched when the details are
  * opened rather than sent with every request list.
  *
@@ -38,6 +38,8 @@ public class JsonDoRequestQueries extends JsonRequestHandler {
 		JSONObject ret = new JSONObject();
 		ret.put("pid", pid);
 		ret.put("url", ri.getUrl());
+		// The request itself, so its details can be shown from the query lists.
+		ret.put("request", ri.toJson());
 		ret.put("queryCount", ri.getQueryCount());
 		ret.put("queriesDropped", ri.getQueriesDropped());
 		ret.put("queries", QueryRecord.toJson(queries));

@@ -2,6 +2,10 @@
   No request details available.
 </div>
 
+<div ng-show="lookingRequest.error" class="alert relative alert-warning" role="alert">
+  {{lookingRequest.error}}
+</div>
+
 <div ng-show="lookingRequest.info" class="requestDetail">
 
 <table class="table table-striped table-hover">
@@ -63,3 +67,49 @@
 		</tr>
 	</tbody>
 </table>
+
+<div ng-show="lookingRequest.queries.length">
+	<h4>Queries <small>slowest first; # is the order they ran<span ng-show="lookingRequest.queriesDropped">; {{lookingRequest.queriesDropped}} more ran but weren't kept (queriesPerRequest setting)</span></small></h4>
+	<table class="table table-striped table-condensed results">
+		<thead>
+			<tr>
+				<th ng-click="sortDetailQueries('order')">
+		            #
+		            <span ng-show="detailSortType == 'order' && !detailSortReverse" class="caret"></span>
+		            <span ng-show="detailSortType == 'order' && detailSortReverse" class="dropup"><span class="caret"></span></span>
+				</th>
+				<th>Query</th>
+				<th ng-click="sortDetailQueries('elapsed')">
+		            Time
+		            <span ng-show="detailSortType == 'elapsed' && !detailSortReverse" class="caret"></span>
+		            <span ng-show="detailSortType == 'elapsed' && detailSortReverse" class="dropup"><span class="caret"></span></span>
+				</th>
+				<th ng-click="sortDetailQueries('rows')">
+		            Rows
+		            <span ng-show="detailSortType == 'rows' && !detailSortReverse" class="caret"></span>
+		            <span ng-show="detailSortType == 'rows' && detailSortReverse" class="dropup"><span class="caret"></span></span>
+				</th>
+				<th ng-click="sortDetailQueries('datasource')">
+		            Datasource
+		            <span ng-show="detailSortType == 'datasource' && !detailSortReverse" class="caret"></span>
+		            <span ng-show="detailSortType == 'datasource' && detailSortReverse" class="dropup"><span class="caret"></span></span>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="q in lookingRequest.queries | orderBy:detailSortType:detailSortReverse" ng-class="{warning: q.active}">
+				<td>{{q.order}}</td>
+				<td style="overflow-wrap: anywhere;">
+					<div style="white-space: pre-wrap;">{{q.sql}}</div>
+					<div ng-show="q.params.length" class="text-muted small">Parameters: <span ng-repeat="p in q.params">{{p}}<span ng-hide="$last">, </span></span></div>
+					<div ng-show="q.exception" class="text-danger small">{{q.exception}}</div>
+				</td>
+				<td nowrap>{{q.elapsed}} ms<span ng-show="q.active"> (running)</span></td>
+				<td>{{q.rows}}</td>
+				<td>{{q.datasource}}</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+</div>

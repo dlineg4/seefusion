@@ -1,4 +1,4 @@
-angular.module("templates.app", ["about/about.tpl.html", "config/config.tpl.html", "counters/counters.tpl.html", "dashboard/dashboard.tpl.html", "dashboard/incident.tpl.html", "dashboard/incidents.tpl.html", "dashboard/servers.tpl.html", "dos/dos.tpl.html", "dos/list.tpl.html", "dos/settings.tpl.html", "header.tpl.html", "help/help.tpl.html", "info/connection-modal.tpl.html", "info/connectivity.tpl.html", "info/info.tpl.html", "info/license.tpl.html", "log/log.tpl.html", "login/login-modal.tpl.html", "monitoring/edit.tpl.html", "monitoring/incidents.tpl.html", "monitoring/monitoring.tpl.html", "monitoring/rules.tpl.html", "nav.tpl.html", "navExpand.tpl.html", "notifications.tpl.html", "popup.tpl.html", "problemHeader.tpl.html", "profiling/profile.tpl.html", "profiling/profiling.tpl.html", "server/active.tpl.html", "server/chart-modal.tpl.html", "server/chart-modal2.tpl.html", "server/recent.tpl.html", "server/requestDetails.tpl.html", "server/server.tpl.html", "server/slow.tpl.html", "sidebar.tpl.html", "snapshot/seestack.tpl.html", "snapshot/snapshot.tpl.html", "snapshot/trace.tpl.html", "stack/seestack.tpl.html", "stack/stack.tpl.html", "stack/trace.tpl.html"]);
+angular.module("templates.app", ["about/about.tpl.html", "config/config.tpl.html", "counters/counters.tpl.html", "dashboard/dashboard.tpl.html", "dashboard/incident.tpl.html", "dashboard/incidents.tpl.html", "dashboard/servers.tpl.html", "dos/dos.tpl.html", "dos/list.tpl.html", "dos/settings.tpl.html", "header.tpl.html", "help/help.tpl.html", "info/connection-modal.tpl.html", "info/connectivity.tpl.html", "info/info.tpl.html", "info/license.tpl.html", "log/log.tpl.html", "login/login-modal.tpl.html", "monitoring/edit.tpl.html", "monitoring/incidents.tpl.html", "monitoring/monitoring.tpl.html", "monitoring/rules.tpl.html", "nav.tpl.html", "navExpand.tpl.html", "notifications.tpl.html", "popup.tpl.html", "problemHeader.tpl.html", "profiling/profile.tpl.html", "profiling/profiling.tpl.html", "server/active.tpl.html", "server/chart-modal.tpl.html", "server/chart-modal2.tpl.html", "server/queries.tpl.html", "server/recent.tpl.html", "server/requestDetails.tpl.html", "server/server.tpl.html", "server/slow.tpl.html", "sidebar.tpl.html", "snapshot/seestack.tpl.html", "snapshot/snapshot.tpl.html", "snapshot/trace.tpl.html", "stack/seestack.tpl.html", "stack/stack.tpl.html", "stack/trace.tpl.html"]);
 
 angular.module("about/about.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about/about.tpl.html",
@@ -1381,6 +1381,75 @@ angular.module("server/chart-modal2.tpl.html", []).run(["$templateCache", functi
     "</div>");
 }]);
 
+angular.module("server/queries.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("server/queries.tpl.html",
+    "<div class=\"requestList\" ng-hide=\"lookingRequest.on\">\n" +
+    "	<div class=\"btn-group\" role=\"group\" style=\"margin-bottom: 10px;\">\n" +
+    "		<button type=\"button\" class=\"btn btn-default\" ng-class=\"{active: queryType == 'active'}\" ng-click=\"setQueryType('active')\">Running</button>\n" +
+    "		<button type=\"button\" class=\"btn btn-default\" ng-class=\"{active: queryType == 'recent'}\" ng-click=\"setQueryType('recent')\">Recent</button>\n" +
+    "		<button type=\"button\" class=\"btn btn-default\" ng-class=\"{active: queryType == 'slowest'}\" ng-click=\"setQueryType('slowest')\">Slowest since start</button>\n" +
+    "	</div>\n" +
+    "	<table class=\"table table-striped table-hover table-condensed results\">\n" +
+    "		<thead>\n" +
+    "			<tr>\n" +
+    "				<th>Query</th>\n" +
+    "				<th ng-click=\"sortQueries('elapsed')\">\n" +
+    "		            Time\n" +
+    "		            <span ng-show=\"querySortType == 'elapsed' && !querySortReverse\" class=\"caret\"></span>\n" +
+    "		            <span ng-show=\"querySortType == 'elapsed' && querySortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
+    "				</th>\n" +
+    "				<th ng-click=\"sortQueries('rows')\">\n" +
+    "		            Rows\n" +
+    "		            <span ng-show=\"querySortType == 'rows' && !querySortReverse\" class=\"caret\"></span>\n" +
+    "		            <span ng-show=\"querySortType == 'rows' && querySortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
+    "				</th>\n" +
+    "				<th ng-click=\"sortQueries('datasource')\">\n" +
+    "		            Datasource\n" +
+    "		            <span ng-show=\"querySortType == 'datasource' && !querySortReverse\" class=\"caret\"></span>\n" +
+    "		            <span ng-show=\"querySortType == 'datasource' && querySortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
+    "				</th>\n" +
+    "				<th ng-click=\"sortQueries('completed')\">\n" +
+    "		            Completed\n" +
+    "		            <span ng-show=\"querySortType == 'completed' && !querySortReverse\" class=\"caret\"></span>\n" +
+    "		            <span ng-show=\"querySortType == 'completed' && querySortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
+    "				</th>\n" +
+    "				<th ng-click=\"sortQueries('url')\">\n" +
+    "		            Request\n" +
+    "		            <span ng-show=\"querySortType == 'url' && !querySortReverse\" class=\"caret\"></span>\n" +
+    "		            <span ng-show=\"querySortType == 'url' && querySortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
+    "				</th>\n" +
+    "			</tr>\n" +
+    "		</thead>\n" +
+    "		<tbody>\n" +
+    "			<tr ng-show=\"queries.length==0 && !busy\">\n" +
+    "				<td colspan=\"6\">No queries.</td>\n" +
+    "			</tr>\n" +
+    "			<tr ng-repeat=\"q in queries | orderBy:querySortType:querySortReverse\" ng-class=\"{highlighted:q.pid === detailRequestNumber}\">\n" +
+    "				<td style=\"min-width: 25em; overflow-wrap: anywhere;\">\n" +
+    "					<span ng-click=\"expandedQueries[q.id] = !expandedQueries[q.id]\" title=\"Click to show or hide the whole query\">\n" +
+    "						<span ng-hide=\"expandedQueries[q.id]\">{{q.sql | limitTo : 300}}<span ng-show=\"q.sql.length > 300\">...</span></span>\n" +
+    "						<span ng-show=\"expandedQueries[q.id]\" style=\"white-space: pre-wrap;\">{{q.sql}}</span>\n" +
+    "					</span>\n" +
+    "					<div ng-show=\"q.params.length\" class=\"text-muted small\">Parameters: <span ng-repeat=\"p in q.params\">{{p}}<span ng-hide=\"$last\">, </span></span></div>\n" +
+    "					<div ng-show=\"q.exception\" class=\"text-danger small\">{{q.exception}}</div>\n" +
+    "				</td>\n" +
+    "				<td nowrap>{{q.elapsed}} ms</td>\n" +
+    "				<td>{{q.rows}}</td>\n" +
+    "				<td>{{q.datasource}}</td>\n" +
+    "				<td nowrap>\n" +
+    "					<span ng-show=\"q.active\">running</span>\n" +
+    "					<span ng-hide=\"q.active\"><span ng-show=\"displayRelativeTimes\">{{q.completedAgoMs | millSecondsToTimeString}} ago</span><span ng-show=\"!displayRelativeTimes\">{{q.completed | date:'mediumTime' | lowercase}}</span></span>\n" +
+    "				</td>\n" +
+    "				<td style=\"min-width: 15em; overflow-wrap: anywhere;\">\n" +
+    "					<a href=\"\" ng-show=\"q.pid\" ng-click=\"queryRequestDetails(q)\" title=\"Show this request's details\">{{q.url}}</a>\n" +
+    "					<span ng-hide=\"q.pid\">(no request)</span>\n" +
+    "				</td>\n" +
+    "			</tr>\n" +
+    "		</tbody>\n" +
+    "	</table>\n" +
+    "</div>");
+}]);
+
 angular.module("server/recent.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("server/recent.tpl.html",
     "<div class=\"requestList\" ng-hide=\"lookingRequest.on\">\n" +
@@ -1477,6 +1546,10 @@ angular.module("server/requestDetails.tpl.html", []).run(["$templateCache", func
     "  No request details available.\n" +
     "</div>\n" +
     "\n" +
+    "<div ng-show=\"lookingRequest.error\" class=\"alert relative alert-warning\" role=\"alert\">\n" +
+    "  {{lookingRequest.error}}\n" +
+    "</div>\n" +
+    "\n" +
     "<div ng-show=\"lookingRequest.info\" class=\"requestDetail\">\n" +
     "\n" +
     "<table class=\"table table-striped table-hover\">\n" +
@@ -1538,6 +1611,52 @@ angular.module("server/requestDetails.tpl.html", []).run(["$templateCache", func
     "		</tr>\n" +
     "	</tbody>\n" +
     "</table>\n" +
+    "\n" +
+    "<div ng-show=\"lookingRequest.queries.length\">\n" +
+    "	<h4>Queries <small>slowest first; # is the order they ran<span ng-show=\"lookingRequest.queriesDropped\">; {{lookingRequest.queriesDropped}} more ran but weren't kept (queriesPerRequest setting)</span></small></h4>\n" +
+    "	<table class=\"table table-striped table-condensed results\">\n" +
+    "		<thead>\n" +
+    "			<tr>\n" +
+    "				<th ng-click=\"sortDetailQueries('order')\">\n" +
+    "		            #\n" +
+    "		            <span ng-show=\"detailSortType == 'order' && !detailSortReverse\" class=\"caret\"></span>\n" +
+    "		            <span ng-show=\"detailSortType == 'order' && detailSortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
+    "				</th>\n" +
+    "				<th>Query</th>\n" +
+    "				<th ng-click=\"sortDetailQueries('elapsed')\">\n" +
+    "		            Time\n" +
+    "		            <span ng-show=\"detailSortType == 'elapsed' && !detailSortReverse\" class=\"caret\"></span>\n" +
+    "		            <span ng-show=\"detailSortType == 'elapsed' && detailSortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
+    "				</th>\n" +
+    "				<th ng-click=\"sortDetailQueries('rows')\">\n" +
+    "		            Rows\n" +
+    "		            <span ng-show=\"detailSortType == 'rows' && !detailSortReverse\" class=\"caret\"></span>\n" +
+    "		            <span ng-show=\"detailSortType == 'rows' && detailSortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
+    "				</th>\n" +
+    "				<th ng-click=\"sortDetailQueries('datasource')\">\n" +
+    "		            Datasource\n" +
+    "		            <span ng-show=\"detailSortType == 'datasource' && !detailSortReverse\" class=\"caret\"></span>\n" +
+    "		            <span ng-show=\"detailSortType == 'datasource' && detailSortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
+    "				</th>\n" +
+    "			</tr>\n" +
+    "		</thead>\n" +
+    "		<tbody>\n" +
+    "			<tr ng-repeat=\"q in lookingRequest.queries | orderBy:detailSortType:detailSortReverse\" ng-class=\"{warning: q.active}\">\n" +
+    "				<td>{{q.order}}</td>\n" +
+    "				<td style=\"overflow-wrap: anywhere;\">\n" +
+    "					<div style=\"white-space: pre-wrap;\">{{q.sql}}</div>\n" +
+    "					<div ng-show=\"q.params.length\" class=\"text-muted small\">Parameters: <span ng-repeat=\"p in q.params\">{{p}}<span ng-hide=\"$last\">, </span></span></div>\n" +
+    "					<div ng-show=\"q.exception\" class=\"text-danger small\">{{q.exception}}</div>\n" +
+    "				</td>\n" +
+    "				<td nowrap>{{q.elapsed}} ms<span ng-show=\"q.active\"> (running)</span></td>\n" +
+    "				<td>{{q.rows}}</td>\n" +
+    "				<td>{{q.datasource}}</td>\n" +
+    "			</tr>\n" +
+    "		</tbody>\n" +
+    "	</table>\n" +
+    "</div>\n" +
+    "\n" +
+    "</div>\n" +
     "");
 }]);
 
@@ -1549,6 +1668,7 @@ angular.module("server/server.tpl.html", []).run(["$templateCache", function($te
     "		  <li ng-class=\"{active:$state.includes('server.active') && !lookingRequest.on}\"><a ui-sref=\"server.active\" ng-click=\"closeDetail()\">Active Requests</a></li>\n" +
     "		  <li ng-class=\"{active:$state.includes('server.recent') && !lookingRequest.on}\"><a ui-sref=\"server.recent\" ng-click=\"closeDetail()\">Recent Requests</a></li>\n" +
     "		  <li ng-class=\"{active:$state.includes('server.slow') && !lookingRequest.on}\"><a ui-sref=\"server.slow\" ng-click=\"closeDetail()\">Slow Requests</a></li>\n" +
+    "		  <li ng-class=\"{active:$state.includes('server.queries') && !lookingRequest.on}\"><a ui-sref=\"server.queries\" ng-click=\"closeDetail()\">Queries</a></li>\n" +
     "		  <li ng-show=\"lookingRequest.on\" ng-class=\"{active:lookingRequest.on}\"><a name=\"details\">Request Details <span class=\"glyphicons remove leftMargin\" ng-click=\"closeDetail();\"></span></a></li>\n" +
     "		</ul>\n" +
     "		<!-- <div ng-show=\"ititialLoading\" class=\"alert relative alert-info\"><img src=\"/img/spinner.gif\"> Loading Request Data...</div> -->\n" +

@@ -4,6 +4,7 @@
 		  <li ng-class="{active:$state.includes('server.active') && !lookingRequest.on}"><a ui-sref="server.active" ng-click="closeDetail()">Active Requests</a></li>
 		  <li ng-class="{active:$state.includes('server.recent') && !lookingRequest.on}"><a ui-sref="server.recent" ng-click="closeDetail()">Recent Requests</a></li>
 		  <li ng-class="{active:$state.includes('server.slow') && !lookingRequest.on}"><a ui-sref="server.slow" ng-click="closeDetail()">Slow Requests</a></li>
+		  <li ng-class="{active:$state.includes('server.queries') && !lookingRequest.on}"><a ui-sref="server.queries" ng-click="closeDetail()">Queries</a></li>
 		  <li ng-show="lookingRequest.on" ng-class="{active:lookingRequest.on}"><a name="details">Request Details <span class="glyphicons remove leftMargin" ng-click="closeDetail();"></span></a></li>
 		</ul>
 		<!-- <div ng-show="ititialLoading" class="alert relative alert-info"><img src="/img/spinner.gif"> Loading Request Data...</div> -->
