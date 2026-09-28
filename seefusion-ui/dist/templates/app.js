@@ -1283,6 +1283,11 @@ angular.module("server/active.tpl.html", []).run(["$templateCache", function($te
     "		            <span ng-show=\"sortType == 'longQueryRows' && !sortReverse\" class=\"caret\"></span>\n" +
     "		            <span ng-show=\"sortType == 'longQueryRows' && sortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
     "				</th>\n" +
+    "				<th ng-click=\"sortType = 'longQueryDatasource'; sortReverse = !sortReverse\">\n" +
+    "		            Datasource\n" +
+    "		            <span ng-show=\"sortType == 'longQueryDatasource' && !sortReverse\" class=\"caret\"></span>\n" +
+    "		            <span ng-show=\"sortType == 'longQueryDatasource' && sortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
+    "				</th>\n" +
     "				<th ng-click=\"sortType = 'longQuerySql'; sortReverse = !sortReverse\">\n" +
     "		            SQL\n" +
     "		            <span ng-show=\"sortType == 'longQuerySql' && !sortReverse\" class=\"caret\"></span>\n" +
@@ -1292,7 +1297,7 @@ angular.module("server/active.tpl.html", []).run(["$templateCache", function($te
     "		</thead>\n" +
     "		<tbody>\n" +
     "			<tr ng-show=\"pages.length==0 && !busy\">\n" +
-    "				<td colspan=\"10\">No active requests</td>\n" +
+    "				<td colspan=\"11\">No active requests</td>\n" +
     "			</tr>\n" +
     "			<tr ng-repeat=\"page in pages | orderBy:sortType:sortReverse\" ng-class=\"{highlighted:page.pid === detailRequestNumber}\">\n" +
     "				<td>\n" +
@@ -1315,6 +1320,7 @@ angular.module("server/active.tpl.html", []).run(["$templateCache", function($te
     "				<td ng-click=\"requestDetails(page)\">{{page.queryTime}}ms</td>\n" +
     "				<td ng-click=\"requestDetails(page)\">{{page.longQueryElapsed}}ms</td>\n" +
     "				<td ng-click=\"requestDetails(page)\">{{page.longQueryRows}}</td>\n" +
+    "				<td ng-click=\"requestDetails(page)\">{{page.longQueryDatasource}}</td>\n" +
     "				<td><span ng-click=\"requestDetails(page)\">{{page.longQuerySql | limitTo : 70}}</span><span ng-show=\"page.longQuerySql.length > 70\">...</span></td>\n" +
     "			</tr>\n" +
     "		</tbody>\n" +
@@ -1426,6 +1432,11 @@ angular.module("server/recent.tpl.html", []).run(["$templateCache", function($te
     "		            <span ng-show=\"sortType == 'longQueryRows' && !sortReverse\" class=\"caret\"></span>\n" +
     "		            <span ng-show=\"sortType == 'longQueryRows' && sortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
     "				</th>\n" +
+    "				<th ng-click=\"sortType = 'longQueryDatasource'; sortReverse = !sortReverse\">\n" +
+    "		            Datasource\n" +
+    "		            <span ng-show=\"sortType == 'longQueryDatasource' && !sortReverse\" class=\"caret\"></span>\n" +
+    "		            <span ng-show=\"sortType == 'longQueryDatasource' && sortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
+    "				</th>\n" +
     "				<th ng-click=\"sortType = 'longQuerySql'; sortReverse = !sortReverse\"> \n" +
     "		            SQL\n" +
     "		            <span ng-show=\"sortType == 'longQuerySql' && !sortReverse\" class=\"caret\"></span>\n" +
@@ -1435,7 +1446,7 @@ angular.module("server/recent.tpl.html", []).run(["$templateCache", function($te
     "		</thead>\n" +
     "		<tbody>\n" +
     "			<tr ng-show=\"pages.length==0 && !busy\"> \n" +
-    "				<td colspan=\"10\">No recent requests.</td>\n" +
+    "				<td colspan=\"11\">No recent requests.</td>\n" +
     "			</tr>\n" +
     "			<!-- <tr><td colspan=8>{{pages[0] | json}}</td></tr> -->\n" +
     "			<tr class=\"requestRow\" ng-repeat=\"page in pages | orderBy:sortType:sortReverse\" ng-class=\"{highlighted:page.pid === detailRequestNumber}\">\n" +
@@ -1452,6 +1463,7 @@ angular.module("server/recent.tpl.html", []).run(["$templateCache", function($te
     "				<td>{{page.queryTime}}ms</td>\n" +
     "				<td>{{page.longQueryElapsed}}ms</td>\n" +
     "				<td>{{page.longQueryRows}}</td>\n" +
+    "				<td>{{page.longQueryDatasource}}</td>\n" +
     "				<td><span ng-click=\"requestDetails(page)\">{{page.longQuerySql | limitTo : 70}}</span><span ng-show=\"page.longQuerySql.length > 70\">...</span></td>\n" +
     "			</tr> \n" +
     "		</tbody>\n" +
@@ -1518,6 +1530,7 @@ angular.module("server/requestDetails.tpl.html", []).run(["$templateCache", func
     "				{{lookingRequest.info.longQueryElapsed}} ms,  {{lookingRequest.info.longQueryRows}} rows\n" +
     "				<span ng-show=\"lookingRequest.info.longQueryActive\">(so far)</span>\n" +
     "				<span ng-show=\"lookingRequest.info.longQuerySql\">:</span>\n" +
+    "				<p ng-show=\"lookingRequest.info.longQueryDatasource\">Datasource: {{lookingRequest.info.longQueryDatasource}}</p>\n" +
     "				<div ng-show=\"lookingRequest.info.longQuerySql\">\n" +
     "					<pre>{{lookingRequest.info.longQuerySql}}</pre>\n" +
     "				</div>\n" +
@@ -1668,6 +1681,11 @@ angular.module("server/slow.tpl.html", []).run(["$templateCache", function($temp
     "		            <span ng-show=\"sortType == 'longQueryRows' && !sortReverse\" class=\"caret\"></span>\n" +
     "		            <span ng-show=\"sortType == 'longQueryRows' && sortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
     "				</th>\n" +
+    "				<th ng-click=\"sortType = 'longQueryDatasource'; sortReverse = !sortReverse\">\n" +
+    "		            Datasource\n" +
+    "		            <span ng-show=\"sortType == 'longQueryDatasource' && !sortReverse\" class=\"caret\"></span>\n" +
+    "		            <span ng-show=\"sortType == 'longQueryDatasource' && sortReverse\" class=\"dropup\"><span class=\"caret\"></span></span>\n" +
+    "				</th>\n" +
     "				<th ng-click=\"sortType = 'longQuerySql'; sortReverse = !sortReverse\">\n" +
     "		            SQL\n" +
     "		            <span ng-show=\"sortType == 'longQuerySql' && !sortReverse\" class=\"caret\"></span>\n" +
@@ -1677,7 +1695,7 @@ angular.module("server/slow.tpl.html", []).run(["$templateCache", function($temp
     "		</thead>\n" +
     "		<tbody>\n" +
     "			<tr ng-show=\"pages.length==0 && !busy\">\n" +
-    "				<td colspan=\"10\">No slow requests.</td>\n" +
+    "				<td colspan=\"11\">No slow requests.</td>\n" +
     "			</tr>\n" +
     "			<tr ng-repeat=\"page in pages | orderBy:sortType:sortReverse\"  ng-class=\"{highlighted:page.requestNumber === detailRequestNumber}\" id=\"req{{page.requestNumber}}\">\n" +
     "				<td><button ng-click=\"open(page)\" ng-if=\"clickableURLs\" title=\"Open this URL\"><span class=\"glyphicons share green\"></span></button> <span ng-click=\"requestDetails(page)\">{{page.url | limitTo : 70}}</span><span ng-show=\"page.url.length > 70\">...</span></td>\n" +
@@ -1693,6 +1711,7 @@ angular.module("server/slow.tpl.html", []).run(["$templateCache", function($temp
     "				<td>{{page.queryTime}}ms</td>\n" +
     "				<td>{{page.longQueryElapsed}}ms</td>\n" +
     "				<td>{{page.longQueryRows}}</td>\n" +
+    "				<td>{{page.longQueryDatasource}}</td>\n" +
     "				<td><span ng-click=\"requestDetails(page)\">{{page.longQuerySql | limitTo : 70}}</span><span ng-show=\"page.longQuerySql.length > 70\">...</span></td>\n" +
     "			</tr>\n" +
     "		</tbody>\n" +

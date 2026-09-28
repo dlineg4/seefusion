@@ -68,6 +68,19 @@ class ConnectionImpl implements java.sql.Connection {
 		sfConfigure();
 	}
 
+	/**
+	 * Name to show for this connection's datasource: the wrapper's dsn= option if set, otherwise the
+	 * database name (SQL Server DB_NAME()), which usually matches the datasource name. Also used for
+	 * connections wrapped by the JDBC agent, which can't see the application's datasource name.
+	 */
+	String getDatasourceName() {
+		String name = connectionMetadata.getProperty("dsn");
+		if (name == null || name.isEmpty()) {
+			name = connectionMetadata.getProperty("DB");
+		}
+		return name == null ? "" : name;
+	}
+
 	void sfConfigure() {
 		String dsn = sfUrlOptions.getProperty("dsn");
 		if (dsn != null) {

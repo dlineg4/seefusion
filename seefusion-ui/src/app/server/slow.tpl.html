@@ -47,6 +47,11 @@
 		            <span ng-show="sortType == 'longQueryRows' && !sortReverse" class="caret"></span>
 		            <span ng-show="sortType == 'longQueryRows' && sortReverse" class="dropup"><span class="caret"></span></span>
 				</th>
+				<th ng-click="sortType = 'longQueryDatasource'; sortReverse = !sortReverse">
+		            Datasource
+		            <span ng-show="sortType == 'longQueryDatasource' && !sortReverse" class="caret"></span>
+		            <span ng-show="sortType == 'longQueryDatasource' && sortReverse" class="dropup"><span class="caret"></span></span>
+				</th>
 				<th ng-click="sortType = 'longQuerySql'; sortReverse = !sortReverse">
 		            SQL
 		            <span ng-show="sortType == 'longQuerySql' && !sortReverse" class="caret"></span>
@@ -56,7 +61,7 @@
 		</thead>
 		<tbody>
 			<tr ng-show="pages.length==0 && !busy">
-				<td colspan="10">No slow requests.</td>
+				<td colspan="11">No slow requests.</td>
 			</tr>
 			<tr ng-repeat="page in pages | orderBy:sortType:sortReverse"  ng-class="{highlighted:page.requestNumber === detailRequestNumber}" id="req{{page.requestNumber}}">
 				<td><button ng-click="open(page)" ng-if="clickableURLs" title="Open this URL"><span class="glyphicons share green"></span></button> <span ng-click="requestDetails(page)">{{page.url | limitTo : 70}}</span><span ng-show="page.url.length > 70">...</span></td>
@@ -72,6 +77,7 @@
 				<td>{{page.queryTime}}ms</td>
 				<td>{{page.longQueryElapsed}}ms</td>
 				<td>{{page.longQueryRows}}</td>
+				<td>{{page.longQueryDatasource}}</td>
 				<td><span ng-click="requestDetails(page)">{{page.longQuerySql | limitTo : 70}}</span><span ng-show="page.longQuerySql.length > 70">...</span></td>
 			</tr>
 		</tbody>

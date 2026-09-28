@@ -55,6 +55,7 @@
 				{{lookingRequest.info.longQueryElapsed}} ms,  {{lookingRequest.info.longQueryRows}} rows
 				<span ng-show="lookingRequest.info.longQueryActive">(so far)</span>
 				<span ng-show="lookingRequest.info.longQuerySql">:</span>
+				<p ng-show="lookingRequest.info.longQueryDatasource">Datasource: {{lookingRequest.info.longQueryDatasource}}</p>
 				<div ng-show="lookingRequest.info.longQuerySql">
 					<pre>{{lookingRequest.info.longQuerySql}}</pre>
 				</div>

@@ -920,24 +920,28 @@ class RequestInfo extends DaoObjectImpl implements Cloneable {
 		long longQueryElapsed = 0;
 		int longQueryRows = 0;
 		String longQuerySql = "";
+		String longQueryDatasource = "";
 		if(queryInfo != null) {
 			if(queryInfo.isActive() || getLongestQueryInfo() == null) {
 				longQueryActive = true;
 				longQueryElapsed = queryInfo.getElapsedTime();
 				longQueryRows = queryInfo.getResultCount();
 				longQuerySql = queryInfo.getQueryText();
+				longQueryDatasource = queryInfo.getDatasource();
 			}
 			else {
 				longQueryActive = false;
 				longQueryElapsed = getLongestQueryInfo().getElapsedTime();
 				longQueryRows = getLongestQueryInfo().getResultCount();
 				longQuerySql = getLongestQueryInfo().getQueryText();
+				longQueryDatasource = getLongestQueryInfo().getDatasource();
 			}
 		}
 		ret.addTag("longQueryActive", longQueryActive);
 		ret.addTag("longQueryElapsed", longQueryElapsed);
 		ret.addTag("longQueryRows", longQueryRows);
 		ret.addTag("longQuerySql", longQuerySql);
+		ret.addTag("longQueryDatasource", longQueryDatasource);
 		return ret;
 	}
 
@@ -998,24 +1002,28 @@ class RequestInfo extends DaoObjectImpl implements Cloneable {
 		long longQueryElapsed = 0;
 		int longQueryRows = 0;
 		String longQuerySql = "";
+		String longQueryDatasource = "";
 		if(queryInfo != null) {
 			if(queryInfo.isActive() || getLongestQueryInfo() == null) {
 				longQueryActive = true;
 				longQueryElapsed = queryInfo.getElapsedTime();
 				longQueryRows = queryInfo.getResultCount();
 				longQuerySql = queryInfo.getQueryText();
+				longQueryDatasource = queryInfo.getDatasource();
 			}
 			else {
 				longQueryActive = false;
 				longQueryElapsed = getLongestQueryInfo().getElapsedTime();
 				longQueryRows = getLongestQueryInfo().getResultCount();
 				longQuerySql = getLongestQueryInfo().getQueryText();
+				longQueryDatasource = getLongestQueryInfo().getDatasource();
 			}
 		}
 		ret.put("longQueryActive", longQueryActive);
 		ret.put("longQueryElapsed", longQueryElapsed);
 		ret.put("longQueryRows", longQueryRows);
 		ret.put("longQuerySql", longQuerySql);
+		ret.put("longQueryDatasource", longQueryDatasource);
 		ret.put("incidentID", incidentID);
 		return ret;
 	}

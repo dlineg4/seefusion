@@ -21,6 +21,9 @@ class QueryInfo extends DaoObjectImpl implements Cloneable, DaoObject {
 
 	String queryText = null;
 
+	// Datasource (or database) name, see ConnectionImpl.getDatasourceName()
+	String datasource = "";
+
 	long startTick = 0;
 
 	boolean isActive = false;
@@ -130,6 +133,7 @@ class QueryInfo extends DaoObjectImpl implements Cloneable, DaoObject {
 		this();
 		this.statement = statement;
 		this.sfInfo = statement.getSfInfo();
+		this.datasource = statement.c.getDatasourceName();
 		this.debugStackTargets = debugStackTargets;
 		this.parameters = new LinkedList<String>();
 		this.pi = pi;
@@ -140,6 +144,7 @@ class QueryInfo extends DaoObjectImpl implements Cloneable, DaoObject {
 		this.statement = statement;
 		this.queryText = qi.queryText;
 		this.sfInfo = qi.sfInfo;
+		this.datasource = qi.datasource;
 		this.debugStackTargets = debugStackTargets;
 		this.parameters = new LinkedList<String>();
 		this.pi = pi;
@@ -352,6 +357,10 @@ class QueryInfo extends DaoObjectImpl implements Cloneable, DaoObject {
 		}
 	}
 
+	String getDatasource() {
+		return datasource;
+	}
+
 	Properties getSfInfo() {
 		return sfInfo;
 	}
@@ -409,6 +418,7 @@ class QueryInfo extends DaoObjectImpl implements Cloneable, DaoObject {
 		ret.put("elapsedtimems", endTick-startTick);
 		ret.put("resultcount", getResultCount());
 		ret.put("querytext", getQueryTextOnly());
+		ret.put("datasource", datasource);
 		ret.put("queryparams", getQueryParamsOnly());
 		ret.put("stacktrace", stack);
 		return ret;
