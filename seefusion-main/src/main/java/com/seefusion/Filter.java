@@ -249,6 +249,8 @@ public class Filter implements javax.servlet.Filter {
 	@Override
 	public void init(FilterConfig filterConfig) {
 		this.sf = SeeFusion.getInstance();
+		// No javax.servlet check here: this class is a javax.servlet.Filter, so it can't load without it.
+		EnvironmentCheck.warnIfKillStopUnsupported(LOG);
 	}
 
 	@Override

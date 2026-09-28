@@ -5,7 +5,8 @@
  * com.seefusion.Driver, by wrapping the connection returned from every JDBC driver's connect().
  *
  * This file is part of SeeFusion. SeeFusion is free software, licensed under the GNU General Public
- * License version 3; see the LICENSE file in the root of this repository.
+ * License, version 3 or (at your option) any later version; see LICENSE and README.md in the root of
+ * this repository.
  */
 
 package com.seefusion;
@@ -52,6 +53,13 @@ public class JdbcAgent {
 			return;
 		}
 		installed = true;
+		if (EnvironmentCheck.isJakartaOnly(ClassLoader.getSystemClassLoader())) {
+			EnvironmentCheck.logBanner(LOG, Level.SEVERE,
+				"SEEFUSION DISABLED: this is a Jakarta servlet container (jakarta.servlet, no javax.servlet).",
+				"SeeFusion supports javax servlet containers only, so the JDBC agent is not installed.");
+			return;
+		}
+		EnvironmentCheck.warnIfKillStopUnsupported(LOG);
 		new AgentBuilder.Default()
 			.disableClassFormatChanges()
 			.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
